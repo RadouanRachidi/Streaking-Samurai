@@ -1,134 +1,168 @@
-﻿using BankRoot.Models;
-using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
-using System.Data;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using BankRoot.Data;
+using BankRoot.Models;
 
 namespace BankRoot.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : Controller
     {
-        private readonly IConfiguration _configuration;
-        public AccountController(IConfiguration configuration)
+        private readonly DataContext _context;
+
+        public AccountController(DataContext context)
         {
-            _configuration = configuration;
+            _context = context;
         }
 
-        [HttpGet]
-        public JsonResult Get()
+        // GET: Account
+        public async Task<IActionResult> Index()
         {
-            string query = @"select * from ""Account"";";
+            var dataContext = _context.Account.Include(a => a.App_user);
+            return View(await dataContext.ToListAsync());
+        }
 
-            DataTable table = new DataTable();
-            string SqlDataSource = _configuration.GetConnectionString("MvcDemoConnectionString");
-            NpgsqlDataReader myReader;
-            using (NpgsqlConnection myCon = new NpgsqlConnection(SqlDataSource))
+        // GET: Account/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null || _context.Account == null)
             {
-                myCon.Open();
-                using (NpgsqlCommand myCommand = new NpgsqlCommand(query, myCon))
-                {
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader);
-
-                    myReader.Close();
-                    myCon.Close();
-                }
+                return NotFound();
             }
 
+            var account = await _context.Account
+                .Include(a => a.App_user)
+                .FirstOrDefaultAsync(m => m.Id_account == id);
+            if (account == null)
+            {
+                return NotFound();
+            }
 
-            return new JsonResult(table);
+            return View(account);
         }
 
+        // GET: Account/Create
+        public IActionResult Create()
+        {
+            ViewData["Id_app_user"] = new SelectList(_context.App_user, "Id_app_user", "Id_app_user");
+            return View();
+        }
+
+        // POST: Account/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public JsonResult Post(Account acc)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id_account,account_number,amount,account_status,Id_app_user")] Account account)
         {
-            string query = @"INSERT INTO ""Account""
-                            (account_number, amount, account_status, ""Id_app_user"")
-                            VALUES (@account_number, @amount, @account_status, @Id_app_user);";
-
-            DataTable table = new DataTable();
-            string SqlDataSource = _configuration.GetConnectionString("MvcDemoConnectionString");
-            NpgsqlDataReader myReader;
-            using (NpgsqlConnection myCon = new NpgsqlConnection(SqlDataSource))
+            if (ModelState.IsValid)
             {
-                myCon.Open();
-                using (NpgsqlCommand myCommand = new NpgsqlCommand(query, myCon))
-                {
-                    myCommand.Parameters.AddWithValue("@account_number", acc.account_number);
-                    myCommand.Parameters.AddWithValue("@amount", acc.amount);
-                    myCommand.Parameters.AddWithValue("@account_status", acc.account_status);
-                    myCommand.Parameters.AddWithValue("@Id_app_user", acc.Id_app_user);
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader);
-
-                    myReader.Close();
-                    myCon.Close();
-                }
+                _context.Add(account);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            return new JsonResult("Added Successfully");
+            ViewData["Id_app_user"] = new SelectList(_context.App_user, "Id_app_user", "Id_app_user", account.Id_app_user);
+            return View(account);
         }
 
-        [HttpPut]
-        public JsonResult Put(Account acc)
+        // GET: Account/Edit/5
+        public async Task<IActionResult> Edit(int? id)
         {
-            string query = @"update ""Account"" set
-                             account_number = @account_number, 
-                             amount = @amount,
-                             account_status = @account_status,
-                             ""Id_app_user"" = @Id_app_user
-                             where ""Id_account""=@Id_account;"
-            ;
-
-            DataTable table = new DataTable();
-            string SqlDataSource = _configuration.GetConnectionString("MvcDemoConnectionString");
-            NpgsqlDataReader myReader;
-            using (NpgsqlConnection myCon = new NpgsqlConnection(SqlDataSource))
+            if (id == null || _context.Account == null)
             {
-                myCon.Open();
-                using (NpgsqlCommand myCommand = new NpgsqlCommand(query, myCon))
-                {
-                    myCommand.Parameters.AddWithValue("@account_number", acc.account_number);
-                    myCommand.Parameters.AddWithValue("@amount", acc.amount);
-                    myCommand.Parameters.AddWithValue("@account_status", acc.account_status);
-                    myCommand.Parameters.AddWithValue("@Id_app_user", acc.Id_app_user);
-                    myCommand.Parameters.AddWithValue("@Id_account", acc.Id_account);
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader);
-
-                    myReader.Close();
-                    myCon.Close();
-                }
+                return NotFound();
             }
-            return new JsonResult("Updated Successfully");
+
+            var account = await _context.Account.FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+            ViewData["Id_app_user"] = new SelectList(_context.App_user, "Id_app_user", "Id_app_user", account.Id_app_user);
+            return View(account);
         }
 
-
-
-        [HttpDelete("{id}")]
-        public JsonResult Delete(int id)
+        // POST: Account/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id_account,account_number,amount,account_status,Id_app_user")] Account account)
         {
-            string query = @"delete from ""Account""
-                             where ""Id_account""=@Id_account;";
-
-            DataTable table = new DataTable();
-            string SqlDataSource = _configuration.GetConnectionString("MvcDemoConnectionString");
-            NpgsqlDataReader myReader;
-            using (NpgsqlConnection myCon = new NpgsqlConnection(SqlDataSource))
+            if (id != account.Id_account)
             {
-                myCon.Open();
-                using (NpgsqlCommand myCommand = new NpgsqlCommand(query, myCon))
-                {
-                    myCommand.Parameters.AddWithValue("@Id_account", id);
-                    myReader = myCommand.ExecuteReader();
-                    table.Load(myReader);
-
-                    myReader.Close();
-                    myCon.Close();
-                }
+                return NotFound();
             }
-            return new JsonResult("Deleted Successfully");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(account);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!AccountExists(account.Id_account))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["Id_app_user"] = new SelectList(_context.App_user, "Id_app_user", "Id_app_user", account.Id_app_user);
+            return View(account);
+        }
+
+        // GET: Account/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null || _context.Account == null)
+            {
+                return NotFound();
+            }
+
+            var account = await _context.Account
+                .Include(a => a.App_user)
+                .FirstOrDefaultAsync(m => m.Id_account == id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            return View(account);
+        }
+
+        // POST: Account/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (_context.Account == null)
+            {
+                return Problem("Entity set 'DataContext.Account'  is null.");
+            }
+            var account = await _context.Account.FindAsync(id);
+            if (account != null)
+            {
+                _context.Account.Remove(account);
+            }
+            
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool AccountExists(int id)
+        {
+          return _context.Account.Any(e => e.Id_account == id);
         }
     }
 }
