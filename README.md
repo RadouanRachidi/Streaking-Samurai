@@ -7,7 +7,7 @@ Bank Root brief Julie, Nico, Radouan, Kevin, Eric
    2.1. [MCD](#MCD)  
    2.2. [MLD](#MLD)  
    2.3. [Diagramme Use-case](#USE-CASES)  
-   2.4. [Diagramme de séquence](#SEQUENCE-DIAGRAM)
+   2.4. [Diagramme de séquence](#SEQUENCE-DIAGRAM)   
    2.5. [Diagramme de classe](#CLASS-DIAGRAM)
 3. [Technologies utilisées](#Technologies-utilisées)  
 
@@ -19,7 +19,7 @@ Bank Root brief Julie, Nico, Radouan, Kevin, Eric
 
 ## **Présentation du projet**  
 
-	Simulation de projet client, le client étant une banque, cherchant à renouveler son système informatique de gestion de comptes client.
+Simulation de projet client, le client étant une banque, cherchant à renouveler son système informatique de gestion de comptes client.
 
 ## **Contraintes de gestion**  
 
@@ -30,7 +30,7 @@ Bank Root brief Julie, Nico, Radouan, Kevin, Eric
 	Possibilité d’avoir un « espace personnel » avec : le listing des comptes du client.
 	Possibilité d’afficher les détails de chaque compte, avec un historique des transactions
 	Le client peut via des formulaires effectuer des dépôts ou des retraits d’argent.
-	L’utilisateur peut également choisir de supprimer chaque compte, sous réserve de 	validation par l’admin
+	L’utilisateur peut également choisir de supprimer chaque compte, sous réserve de validation par l’admin
 
 ## **Rôles des utilisateurs**  
 
@@ -38,12 +38,12 @@ Bank Root brief Julie, Nico, Radouan, Kevin, Eric
 
 ## **Livrables**  
 
-    MCD  
-    MLD  
-    USE CASES  
-    SEQUENCE DIAGRAM  
-    CLASS DIAGRAM  
-    Plan de sécurisation (fourni à côté)  
+    **MCD**  
+    **MLD**  
+    **USE CASES**  
+    **SEQUENCE DIAGRAM**  
+    **CLASS DIAGRAM**  
+    Plan de sécurisation (fourni à côté)  (lien cliquable)
 
 ## **Technologies utilisées**  
 
